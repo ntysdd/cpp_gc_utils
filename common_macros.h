@@ -52,12 +52,29 @@ ARRAY_LENGTH_helper_is_array(T)
 // use __auto_type to prevent self initialization
 // every arg is evaluated once
 // unfortunately this macro doesn't work for C++
-#define MAX_MIN_macro_helper(a,b,op)  ({ __auto_type s =                     \
+#define MAX_MIN_cmp_helper(a,b,op)  ({ __auto_type s =                       \
                 (struct { __typeof__(a) _a; __typeof__(b) _b; })             \
                 { ._a = (a), ._b = (b) };                                    \
                 (s._a op s._b) ? s._b : s._a; })
-#define MAX(a,b)  MAX_MIN_macro_helper(a,b,<)
-#define MIN(a,b)  MAX_MIN_macro_helper(a,b,>)
+
+#define COMMON_MACROS_helper_is_constexpr_helper(x) _Generic((x), int*:1,void*:0)
+#define COMMON_MACROS_helper_is_constexpr(x) COMMON_MACROS_helper_is_constexpr_helper( \
+                1?(void*)((long long)(x)*0LL):(int*)0)
+
+#define MAX_eval_once_helper(a,b)  MAX_MIN_cmp_helper(a,b,<)
+#define MIN_eval_once_helper(a,b)  MAX_MIN_cmp_helper(a,b,>)
+
+#define MAX(a,b) __builtin_choose_expr(                          \
+                COMMON_MACROS_helper_is_constexpr(a)             \
+                && COMMON_MACROS_helper_is_constexpr(b),         \
+                (a) < (b) ? (b) : (a),                           \
+                MAX_eval_once_helper(a,b))
+
+#define MIN(a,b) __builtin_choose_expr(                          \
+                COMMON_MACROS_helper_is_constexpr(a)             \
+                && COMMON_MACROS_helper_is_constexpr(b),         \
+                (a) > (b) ? (b) : (a),                           \
+                MIN_eval_once_helper(a,b))
 
 
 #else
