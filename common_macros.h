@@ -41,3 +41,5 @@ ARRAY_LENGTH_helper_is_array(T)
 
 #endif
 
+
+#define COMPILER_BARRIER() __asm__ __volatile__ ("":::"memory")
