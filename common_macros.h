@@ -47,6 +47,10 @@ ARRAY_LENGTH_helper_is_array(T)
 #define COMPILER_BARRIER() __asm__ __volatile__ ("":::"memory")
 
 
+#define MAX_SIMPLE(a,b) ((b)>(a)?(b):(a))
+#define MIN_SIMPLE(a,b) ((b)<(a)?(b):(a))
+
+
 #ifndef __cplusplus
 
 // use __auto_type to prevent self initialization
