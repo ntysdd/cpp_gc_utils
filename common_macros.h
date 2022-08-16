@@ -172,10 +172,11 @@ template<class T, class U> struct COMMON_MACROS_helper_remove_reference_retain_c
 template<class T, class U>
 ALWAYS_INLINE
 inline auto
+constexpr
 MAX_MIN_macro_helper(T&& a, U&& b, int maxOrMin)
     -> typename COMMON_MACROS_helper_remove_reference_retain_cv<T, U>::type
 {
-    bool cond;
+    bool cond = false;
     if (maxOrMin == 1) {
         cond = (a < b);
     } else {
@@ -191,9 +192,10 @@ MAX_MIN_macro_helper(T&& a, U&& b, int maxOrMin)
 template<class T, class U>
 ALWAYS_INLINE
 inline auto
+constexpr
 MAX_MIN_macro_helper(const T& a, const U& b, int maxOrMin) -> decltype(0?a:b)
 {
-    bool cond;
+    bool cond = false;
     if (maxOrMin == 1) {
         cond = (a < b);
     } else {
@@ -213,13 +215,14 @@ template<class T> struct COMMON_MACROS_helper_is_const<const T> : COMMON_MACROS_
 template<class T>
 ALWAYS_INLINE
 inline auto
+constexpr
 MAX_MIN_macro_helper(T &a, T &b, int maxOrMin) ->
     typename COMMON_MACROS_helper_enable_if<
         ! COMMON_MACROS_helper_is_const<T>::value,
         T&
     >::type
 {
-    bool cond;
+    bool cond = false;
     if (maxOrMin == 1) {
         cond = (a < b);
     } else {
