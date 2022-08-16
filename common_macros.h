@@ -59,25 +59,25 @@ ARRAY_LENGTH_helper_is_array(T)
 #define MAX_MIN_cmp_helper(a,b,op)  ({ __auto_type s =                       \
                 (struct { __typeof__(a) _a; __typeof__(b) _b; })             \
                 { ._a = (a), ._b = (b) };                                    \
-                (s._a op s._b) ? s._b : s._a; })
+                (s._b op s._a) ? s._b : s._a; })
 
 #define COMMON_MACROS_helper_is_constexpr_helper(x) _Generic((x), int*:1,void*:0)
 #define COMMON_MACROS_helper_is_constexpr(x) COMMON_MACROS_helper_is_constexpr_helper( \
                 1?(void*)((long long)(x)*0LL):(int*)0)
 
-#define MAX_eval_once_helper(a,b)  MAX_MIN_cmp_helper(a,b,<)
-#define MIN_eval_once_helper(a,b)  MAX_MIN_cmp_helper(a,b,>)
+#define MAX_eval_once_helper(a,b)  MAX_MIN_cmp_helper(a,b,>)
+#define MIN_eval_once_helper(a,b)  MAX_MIN_cmp_helper(a,b,<)
 
 #define MAX(a,b) __builtin_choose_expr(                          \
                 COMMON_MACROS_helper_is_constexpr(a)             \
                 && COMMON_MACROS_helper_is_constexpr(b),         \
-                (a) < (b) ? (b) : (a),                           \
+                MAX_SIMPLE(a,b),                                 \
                 MAX_eval_once_helper(a,b))
 
 #define MIN(a,b) __builtin_choose_expr(                          \
                 COMMON_MACROS_helper_is_constexpr(a)             \
                 && COMMON_MACROS_helper_is_constexpr(b),         \
-                (a) > (b) ? (b) : (a),                           \
+                MIN_SIMPLE(a,b),                                 \
                 MIN_eval_once_helper(a,b))
 
 
@@ -199,9 +199,9 @@ MAX_MIN_macro_helper(T&& a, U&& b, int maxOrMin)
 {
     bool cond = false;
     if (maxOrMin == 1) {
-        cond = (a < b);
+        cond = (b > a);
     } else {
-        cond = (a > b);
+        cond = (b < a);
     }
     if (cond) {
         return COMMON_MACROS_helper_forward<U>(b);
@@ -218,9 +218,9 @@ MAX_MIN_macro_helper(const T& a, const U& b, int maxOrMin) -> decltype(0?a:b)
 {
     bool cond = false;
     if (maxOrMin == 1) {
-        cond = (a < b);
+        cond = (b > a);
     } else {
-        cond = (a > b);
+        cond = (b < a);
     }
     if (cond) {
         return b;
@@ -245,9 +245,9 @@ MAX_MIN_macro_helper(T &a, T &b, int maxOrMin) ->
 {
     bool cond = false;
     if (maxOrMin == 1) {
-        cond = (a < b);
+        cond = (b > a);
     } else {
-        cond = (a > b);
+        cond = (b < a);
     }
     if (cond) {
         return b;
