@@ -22,23 +22,24 @@
 
 // true for array arg, false for pointer
 // used for static_assert
-template<class T, decltype(sizeof 0) N>
-constexpr bool
-ARRAY_LENGTH_helper_is_array(T const (&)[N])
-{
-    return 1;
-}
-
 template<class T>
 constexpr bool
-ARRAY_LENGTH_helper_is_array(T)
+ARRAY_LENGTH_helper_is_array(const T&, const T&)
 {
-    return 0;
+    return false;
+}
+
+template<class T, class U>
+constexpr bool
+ARRAY_LENGTH_helper_is_array(T, U)
+{
+    return true;
 }
 
 
-#define ARRAY_LENGTH(a) ({ static_assert(ARRAY_LENGTH_helper_is_array(a),     \
-                           "ARRAY_LENGTH is only for actual array");          \
+
+#define ARRAY_LENGTH(a) ({ static_assert(ARRAY_LENGTH_helper_is_array((a),(a)+0),     \
+                           "ARRAY_LENGTH is only for actual array");                  \
                            sizeof(a) / sizeof((a)[0]); })
 
 #endif
