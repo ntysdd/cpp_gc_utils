@@ -49,11 +49,16 @@ ARRAY_LENGTH_helper_is_array(T)
 
 #ifndef __cplusplus
 
-// use __auto_type to prevent self initialization XXX
+// use __auto_type to prevent self initialization
 // every arg is evaluated once
-// unfortunately this doesn't work for C++
-#define MAX(a,b) ({ __auto_type _a = (a); __auto_type _b = (b); (_a < _b) ? _b : _a; })
-#define MIN(a,b) ({ __auto_type _a = (a); __auto_type _b = (b); (_a > _b) ? _b : _a; })
+// unfortunately this macro doesn't work for C++
+#define MAX_MIN_macro_helper(a,b,op)  ({ __auto_type s =                     \
+                (struct { __typeof__(a) _a; __typeof__(b) _b; })             \
+                { ._a = (a), ._b = (b) };                                    \
+                (s._a op s._b) ? s._b : s._a; })
+#define MAX(a,b)  MAX_MIN_macro_helper(a,b,<)
+#define MIN(a,b)  MAX_MIN_macro_helper(a,b,>)
+
 
 #else
 
@@ -211,7 +216,7 @@ inline auto
 MAX_MIN_macro_helper(T &a, T &b, int maxOrMin) ->
     typename COMMON_MACROS_helper_enable_if<
         ! COMMON_MACROS_helper_is_const<T>::value,
-	T&
+        T&
     >::type
 {
     bool cond;
