@@ -1,5 +1,23 @@
 #pragma once
 
+#ifndef __cplusplus
+_Static_assert(((unsigned char)-1) == 255, "failed assert UCHAR_MAX");
+_Static_assert(sizeof(short) == 2, "failed assert sizeof(short) is 2");
+_Static_assert(((unsigned short)-1) == 65535, "failed assert USHRT_MAX");
+_Static_assert(sizeof(int) == 4, "failed assert sizeof(int) is 4");
+_Static_assert(((unsigned int)-1) == 4294967295L, "failed assert UINT_MAX");
+_Static_assert(sizeof(long long) == 8, "failed assert sizeof(long long) is 8");
+_Static_assert(((unsigned long long)-1) == 18446744073709551615ULL, "failed assert ULLONG_MAX");
+#else
+static_assert(static_cast<unsigned char>(-1) == 255, "failed assert UCHAR_MAX");
+static_assert(sizeof(short) == 2, "failed assert sizeof(short) is 2");
+static_assert(static_cast<unsigned short>(-1) == 65535, "failed assert USHRT_MAX");
+static_assert(sizeof(int) == 4, "failed assert sizeof(int) is 4");
+static_assert(static_cast<unsigned int>(-1) == 4294967295L, "failed assert UINT_MAX");
+static_assert(sizeof(long long) == 8, "failed assert sizeof(long long) is 8");
+static_assert(static_cast<unsigned long long>(-1) == 18446744073709551615ULL, "failed assert ULLONG_MAX");
+#endif
+
 #define ALWAYS_INLINE __attribute__((__always_inline__))
 
 #define NO_INLINE __attribute__((__noinline__))
