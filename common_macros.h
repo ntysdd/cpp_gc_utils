@@ -279,3 +279,112 @@ MAX_MIN_macro_helper(T &a, T &b, int maxOrMin) ->
 #define MIN(a,b) MAX_MIN_macro_helper(a,b,2)
 
 #endif
+
+#ifndef __cplusplus
+#define COMMON_MACROS_reinterpret_cast_helper(T,a) ((T)(a))
+#define COMMON_MACROS_static_cast_helper(T,a) ((T)(a))
+#else
+#define COMMON_MACROS_reinterpret_cast_helper(T,a) (reinterpret_cast<T>(a))
+#define COMMON_MACROS_static_cast_helper(T,a) (static_cast<T>(a))
+#endif
+
+ALWAYS_INLINE
+static inline void
+COMMON_MACROS_explicit_memset(void *a, int c, __typeof__(sizeof(0)) n)
+{
+    if (n == 0) {
+        return;
+    }
+    if (c == 0) {
+        // potentially unaligned access
+        if (n == 2) {
+            short *p = COMMON_MACROS_reinterpret_cast_helper(short*, a);
+            __asm__ __volatile__ ("movw\t$0, %0" : "=m"(*p));
+            return;
+        } else if (n == 4) {
+            int *p = COMMON_MACROS_reinterpret_cast_helper(int*, a);
+            __asm__ __volatile__ ("movl\t$0, %0" : "=m"(*p));
+            return;
+        } else if (n == 8) {
+            long long *p = COMMON_MACROS_reinterpret_cast_helper(long long*, a);
+            __asm__ __volatile__ ("movq\t$0, %0" : "=m"(*p));
+            return;
+        }
+    }
+    if (c == 0 && n > 1) {
+        if (n < 3) {
+            __builtin_abort();
+        }
+        // special handling for zeroing
+        char *p = COMMON_MACROS_reinterpret_cast_helper(char*, a);
+        __typeof__(n) n1 = n;
+        int is_align2 = COMMON_MACROS_reinterpret_cast_helper(unsigned long long, p) % 2 == 0;
+        if (!is_align2) {
+            *p = 0;
+            p++;
+            n1--;
+        }
+        if (n1 < 2) {
+            __builtin_abort();
+        }
+        int is_align4 = COMMON_MACROS_reinterpret_cast_helper(unsigned long long, p) % 4 == 0;
+        if (!is_align4) {
+            __asm__ __volatile__ ("movw\t$0, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(short*, p)));
+            p += 2;
+            n1 -= 2;
+        }
+        if (n1 < 4) {
+            if (n1 == 0) {
+                return;
+            }
+            if (n1 == 1) {
+                *p = 0;
+            } else if (n1 == 2) {
+                __asm__ __volatile__ ("movw\t$0, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(short*, p)));
+            } else {
+                __asm__ __volatile__ ("movw\t$0, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(short*, p)));
+                p += 2;
+                *p = 0;
+            }
+            return;
+        }
+        int is_align8 = COMMON_MACROS_reinterpret_cast_helper(unsigned long long, p) % 8 == 0;
+        if (!is_align8) {
+            __asm__ __volatile__ ("movl\t$0, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(int*, p)));
+            p += 4;
+            n1 -= 4;
+        }
+        while (n1 >= 8) {
+            while (n1 >= 16) {
+                __asm__ __volatile__ ("movq\t$0, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(long long*, p)));
+                __asm__ __volatile__ ("movq\t$0, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(long long*, p + 8)));
+                p += 16;
+                n1 -= 16;
+            }
+            if (n1 < 8) {
+                break;
+            }
+            __asm__ __volatile__ ("movq\t$0, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(long long*, p)));
+            p += 8;
+            n1 -= 8;
+        }
+        if (n1 >= 4) {
+            __asm__ __volatile__ ("movl\t$0, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(int*, p)));
+            p += 4;
+            n1 -= 4;
+        }
+        if (n1 >= 2) {
+            __asm__ __volatile__ ("movw\t$0, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(short*, p)));
+            p += 2;
+            n1 -= 2;
+        }
+        if (n1 >= 1) {
+            *p = 0;
+        }
+        return;
+    }
+    __builtin_memset(a, c, n);
+    __asm__ __volatile__ ("" : : "m"(*(char (*)[n])a));
+}
+
+#define EXPLICIT_BZERO(a) COMMON_MACROS_explicit_memset(&(a), 0, sizeof(a))
