@@ -384,7 +384,7 @@ COMMON_MACROS_explicit_memset(void *a, int c, __typeof__(sizeof(0)) n)
         return;
     }
     __builtin_memset(a, c, n);
-    __asm__ __volatile__ ("" : : "m"(*(char (*)[n])a));
+    __asm__ __volatile__ ("" : : "m"(*COMMON_MACROS_reinterpret_cast_helper(char (*)[n], a)));
 }
 
 #define EXPLICIT_BZERO(a) COMMON_MACROS_explicit_memset(&(a), 0, sizeof(a))
