@@ -289,6 +289,13 @@ MAX_MIN_macro_helper(T &a, T &b, int maxOrMin) ->
 #endif
 
 ALWAYS_INLINE
+static inline int
+COMMON_MACROS_is_pointer_align(void *p, unsigned n)
+{
+    return COMMON_MACROS_reinterpret_cast_helper(unsigned long long, p) % n == 0;
+}
+
+ALWAYS_INLINE
 static inline void
 COMMON_MACROS_explicit_memset(void *a, int c, __typeof__(sizeof(0)) n)
 {
