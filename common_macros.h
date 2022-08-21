@@ -314,12 +314,12 @@ COMMON_MACROS_explicit_bzero(void *a, __typeof__(sizeof 0) n)
         }
         if (n == 4) {
             __asm__ __volatile__ ("movl\t%1, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(int*, p))
-                    : "ai"(0));
+                    : "ri"(0));
             return;
         }
         if (n == 8) {
             __asm__ __volatile__ ("movq\t%1, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(long long*, p))
-                    : "ai"(0));
+                    : "ri"(0LL));
             return;
         }
         if (n == 16 && COMMON_MACROS_is_pointer_align(p, 16)) {
@@ -336,7 +336,7 @@ COMMON_MACROS_explicit_bzero(void *a, __typeof__(sizeof 0) n)
         if (!COMMON_MACROS_is_pointer_align(p, 16) && n >= 8) {
             __asm__ __volatile__ ("movq\t%1, %0"
                         : "=m"(*COMMON_MACROS_reinterpret_cast_helper(long long*, p))
-                        : "ai"(0));
+                        : "ri"(0LL));
             p += 8;
             n -= 8;
         }
@@ -369,7 +369,7 @@ COMMON_MACROS_explicit_bzero(void *a, __typeof__(sizeof 0) n)
         if (n >= 8) {
             __asm__ __volatile__ ("movq\t%1, %0"
                         : "=m"(*COMMON_MACROS_reinterpret_cast_helper(long long*, p))
-                        : "ai"(0));
+                        : "ri"(0LL));
             p += 8;
             n -= 8;
         }
@@ -415,7 +415,7 @@ COMMON_MACROS_explicit_bzero(void *a, __typeof__(sizeof 0) n)
                     goto tail;
                 }
                 __asm__ __volatile__ ("movl\t%1, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(int*, p))
-                        : "ai"(0));
+                        : "ri"(0));
                 p += 4;
                 n1 -= 4;
                 align_n += 4;
@@ -425,7 +425,7 @@ COMMON_MACROS_explicit_bzero(void *a, __typeof__(sizeof 0) n)
                     goto tail;
                 }
                 __asm__ __volatile__ ("movq\t%1, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(long long*, p))
-                        : "ai"(0));
+                        : "ri"(0LL));
                 p += 8;
                 n1 -= 8;
                 align_n += 8;
@@ -482,7 +482,7 @@ tail:
             case 9:
             case 8:
                 __asm__ __volatile__ ("movq\t%1, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(long long*, p))
-                        : "ai"(0));
+                        : "ri"(0LL));
                 p += 8;
                 n1 -= 8;
                 continue;
@@ -491,7 +491,7 @@ tail:
             case 5:
             case 4:
                 __asm__ __volatile__ ("movl\t%1, %0" : "=m"(*COMMON_MACROS_reinterpret_cast_helper(int*, p))
-                        : "ai"(0));
+                        : "ri"(0));
                 p += 4;
                 n1 -= 4;
                 continue;
