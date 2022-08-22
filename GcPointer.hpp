@@ -1,6 +1,6 @@
 #pragma once
 
-#include <utility>
+#include "common_macros.h"
 
 template<class T>
 class GcPointer final {
@@ -10,36 +10,24 @@ public:
     }
 
     GcPointer(const GcPointer& rhs) noexcept {
-        __asm__ __volatile__ (
-            "mov\t%1, %0"
-            : "=m"(rawPointer)
-            : "r"(rhs.rawPointer)
-        );
+        this->rawPointer = rhs.rawPointer;
+        ensureRawPointerInMemory();
     }
 
     explicit GcPointer(T* rhs) noexcept {
-        __asm__ __volatile__ (
-            "mov\t%1, %0"
-            : "=m"(rawPointer)
-            : "r"(rhs)
-        );
+        this->rawPointer = rhs;
+        ensureRawPointerInMemory();
     }
 
     GcPointer& operator=(const GcPointer& rhs) noexcept {
-        __asm__ __volatile__ (
-            "mov\t%1, %0"
-            : "=m"(rawPointer)
-            : "r"(rhs.rawPointer)
-        );
+        this->rawPointer = rhs.rawPointer;
+        ensureRawPointerInMemory();
         return *this;
     }
 
     GcPointer& operator=(T* rhs) noexcept {
-        __asm__ __volatile__ (
-            "mov\t%1, %0"
-            : "=m"(rawPointer)
-            : "r"(rhs)
-        );
+        this->rawPointer = rhs;
+        ensureRawPointerInMemory();
         return *this;
     }
 
@@ -58,27 +46,18 @@ private:
     T* rawPointer;
 
     void setRawPointerNull() noexcept {
-        if (sizeof(rawPointer) == 4) {
-            __asm__ __volatile__ (
-                "movl\t%1, %0"
-                : "=m"(rawPointer)
-                : "ri"(0)
-            );
-        } else if (sizeof(rawPointer) == 8) {
-            __asm__ __volatile__ (
-                "movq\t%1, %0"
-                : "=m"(rawPointer)
-                : "ri"(0LL)
-            );
-        } else {
-            __builtin_abort();
-        }
+        rawPointer = nullptr;
+        ensureRawPointerInMemory();
+    }
+
+    void ensureRawPointerInMemory() const noexcept {
+        __asm__ __volatile__ ("" : : "m"(rawPointer));
     }
 };
 
 template<class T, class... Args>
 static GcPointer<T> GcNew(const Args&... args)
 {
-    T* p = new T { std::forward<Args>(args)... };
+    T* p = new T { COMMON_MACROS_helper_forward<Args>(args)... };
     return GcPointer<T>{p};
 }
