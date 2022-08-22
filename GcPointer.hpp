@@ -14,14 +14,32 @@ public:
         ensureRawPointerInMemory();
     }
 
+    GcPointer(GcPointer&& rhs) noexcept {
+        this->rawPointer = rhs.rawPointer;
+        rhs.rawPointer = nullptr;
+        ensureRawPointerInMemory();
+        rhs.ensureRawPointerInMemory();
+    }
+
     explicit GcPointer(T* rhs) noexcept {
         this->rawPointer = rhs;
         ensureRawPointerInMemory();
     }
 
     GcPointer& operator=(const GcPointer& rhs) noexcept {
+        if (this == &rhs) {
+            return *this;
+        }
         this->rawPointer = rhs.rawPointer;
         ensureRawPointerInMemory();
+        return *this;
+    }
+
+    GcPointer& operator=(GcPointer&& rhs) noexcept {
+        this->rawPointer = rhs.rawPointer;
+        rhs.rawPointer = nullptr;
+        ensureRawPointerInMemory();
+        rhs.ensureRawPointerInMemory();
         return *this;
     }
 
@@ -58,6 +76,5 @@ private:
 template<class T, class... Args>
 static GcPointer<T> GcNew(const Args&... args)
 {
-    T* p = new T { COMMON_MACROS_helper_forward<Args>(args)... };
-    return GcPointer<T>{p};
+    return GcPointer<T>{new T { COMMON_MACROS_helper_forward<Args>(args)... }};
 }
