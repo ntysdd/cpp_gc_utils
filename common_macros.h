@@ -295,6 +295,7 @@ COMMON_MACROS_is_pointer_align(void *p, unsigned n)
     return COMMON_MACROS_reinterpret_cast_helper(unsigned long long, p) % n == 0;
 }
 
+__attribute__((unused))
 static void
 COMMON_MACROS_explicit_bzero(void *a, __typeof__(sizeof 0) n)
 {
